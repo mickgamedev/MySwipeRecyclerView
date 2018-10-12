@@ -144,19 +144,7 @@
                 android:textColor="@color/link"
                 android:id="@+id/latlng"
                 android:textSize="16sp"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="@string/other_names"
-                android:layout_marginTop="16dp"
-                android:textSize="22sp"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/otherNames"
-                android:textSize="16sp"/>
-
-
+ 
         </LinearLayout>
 
     </android.support.v4.widget.NestedScrollView>

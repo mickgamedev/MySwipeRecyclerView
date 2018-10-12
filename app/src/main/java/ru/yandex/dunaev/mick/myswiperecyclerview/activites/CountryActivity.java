@@ -1,9 +1,9 @@
 package ru.yandex.dunaev.mick.myswiperecyclerview.activites;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -17,6 +17,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import ru.yandex.dunaev.mick.myswiperecyclerview.R;
+import ru.yandex.dunaev.mick.myswiperecyclerview.map.MyMap;
 import ru.yandex.dunaev.mick.myswiperecyclerview.map.MyMapClickListener;
 import ru.yandex.dunaev.mick.myswiperecyclerview.model.CountryDescription;
 import ru.yandex.dunaev.mick.myswiperecyclerview.utils.CountiesHelper;
@@ -36,16 +37,21 @@ public class CountryActivity extends AppCompatActivity {
     @BindView(R.id.population) TextView population;
     @BindView(R.id.area) TextView area;
     @BindView(R.id.timezones) TextView timezones;
-    @BindView(R.id.otherNames) TextView otherNames;
     @BindView(R.id.latlng) TextView latLng;
+
+    private float mLat = 0.0f;
+    private float mLng = 0.0f;
+
+    private String countryName;
+    private String countryCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_country);
 
-        String countryName = getIntent().getStringExtra(EXTRA_COUNTRY_NAME);
-        String countryCode = getIntent().getStringExtra(EXTRA_COUNTRY_CODE);
+        countryName = getIntent().getStringExtra(EXTRA_COUNTRY_NAME);
+        countryCode = getIntent().getStringExtra(EXTRA_COUNTRY_CODE);
         String countryFlagUrl = getIntent().getStringExtra(EXTRA_COUNTRY_FLAG_URL);
 
         ButterKnife.bind(this);
@@ -73,9 +79,10 @@ public class CountryActivity extends AppCompatActivity {
                 population.setText(String.format("%d",description.getPopulation()));
                 area.setText(String.format("%.0f",description.getArea()));
                 timezones.setText(description.getTimezones());
-                otherNames.setText(description.getOtherNames());
                 latLng.setText(description.getLatlng());
-                latLng.setOnClickListener(new MyMapClickListener(description.getLat(),description.getLng()));
+                mLat = description.getLat();
+                mLng = description.getLng();
+                latLng.setOnClickListener(new MyMapClickListener(CountryActivity.this,mLat,mLng,countryName,countryCode));
             }
 
             @Override
@@ -83,6 +90,16 @@ public class CountryActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @OnClick(R.id.flag)
+    public void OnClickFlag(View view){
+        Intent intent = new Intent(this,MyMapView.class);
+        intent.putExtra(MyMapView.EXTRA_LAT,mLat);
+        intent.putExtra(MyMapView.EXTRA_LNG,mLng);
+        intent.putExtra(MyMapView.EXTRA_COUNTRY_NAME,countryName);
+        intent.putExtra(MyMapView.EXTRA_COUNTRY_CODE,countryCode);
+        startActivity(intent);
     }
 
 }
