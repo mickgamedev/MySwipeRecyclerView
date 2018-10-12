@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">MySwipeRecyclerView</string>
+    <string name="sub_region">Sub region</string>
+    <string name="capital">Capital</string>
+    <string name="calling_codes">Calling codes</string>
+    <string name="alt_spelling">alt spelling</string>
+    <string name="population">Population</string>
+    <string name="area">Area</string>
+    <string name="time_zones">Time zones</string>
+    <string name="other_names">other names</string>
 </resources>
