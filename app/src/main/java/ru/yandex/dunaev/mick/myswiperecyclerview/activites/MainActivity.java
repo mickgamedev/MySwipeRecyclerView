@@ -8,6 +8,7 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Country>> call, Response<List<Country>> response) {
                 if(response.body() == null) return;
-                final List<Country> countries = response.body();
+                List<Country> countries = response.body();
 
                 mRecyclerView.setAdapter(new RecyclerView.Adapter() {
 
@@ -92,6 +93,22 @@ public class MainActivity extends AppCompatActivity {
                         return countries.size();
                     }
                 });
+                ItemTouchHelper.SimpleCallback callback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+                    @Override
+                    public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder viewHolder1) {
+                        return false;
+                    }
+
+                    @Override
+                    public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
+
+                        int delIndex = viewHolder.getAdapterPosition();
+                        countries.remove(delIndex);
+                        mRecyclerView.getAdapter().notifyItemRemoved(delIndex);
+                        mRecyclerView.getAdapter().notifyDataSetChanged();
+                    }
+                };
+                new ItemTouchHelper(callback).attachToRecyclerView(mRecyclerView);
             }
 
             @Override
@@ -100,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
     }
 
     @Override
