@@ -12,6 +12,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -35,6 +36,7 @@ public class MyMapView extends AppCompatActivity implements OnMapReadyCallback {
     private GoogleMap map;
     private float lat;
     private float lng;
+    private CountryBounds mCountryBounds;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,18 +52,60 @@ public class MyMapView extends AppCompatActivity implements OnMapReadyCallback {
 
         lat = getIntent().getFloatExtra(EXTRA_LAT,0.0f);
         lng = getIntent().getFloatExtra(EXTRA_LNG, 0.0f);
-
         mMapView.onCreate(savedInstanceState);
-        mMapView.getMapAsync(this);
+
+        CountiesHelper.getInstanceBounds().getCountryBounds(countryName,"json").enqueue(new Callback<List<CountryBounds>>() {
+            @Override
+            public void onResponse(Call<List<CountryBounds>> call, Response<List<CountryBounds>> response) {
+                List<CountryBounds> countryBounds = response.body();
+                if(countryBounds == null) return;
+                List<CountryBounds> filterCountries = new ArrayList<>();
+                for(CountryBounds country : countryBounds){
+                    float minLat, minLng, maxLat, maxLng;
+                    CountryBounds.Bounds bounds = country.parseBounds();
+                    if(bounds == null) continue;
+                    minLat = bounds.getMinLat();
+                    minLng = bounds.getMinLng();
+                    maxLat = bounds.getMaxLat();
+                    maxLng = bounds.getMaxLng();
+
+                    if((lat >= minLat && lat <= maxLat) && (lng >= minLng && lng <= maxLng)) filterCountries.add(country);
+                }
+                if(filterCountries.size() == 0) mCountryBounds = null;
+                else mCountryBounds = filterCountries.get(0);
+                mMapView.getMapAsync(MyMapView.this);
+
+            }
+
+            @Override
+            public void onFailure(Call<List<CountryBounds>> call, Throwable t) {
+
+            }
+        });
+
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
         map.getUiSettings().setMyLocationButtonEnabled(false);
-        map.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(lat, lng)));
-        //map.moveCamera(CameraUpdateFactory.newLatLngBounds(new LatLngBounds(
-         //       new LatLng(-44, 113), new LatLng(-10, 154)),0));
+        if(mCountryBounds == null) {
+            map.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(lat, lng)));
+        } else {
+            float minLat, minLng, maxLat, maxLng;
+            CountryBounds.Bounds bounds = mCountryBounds.parseBounds();
+            if(bounds == null) {
+                map.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(lat, lng)));
+                return;
+            }
+            minLat = bounds.getMinLat();
+            minLng = bounds.getMinLng();
+            maxLat = bounds.getMaxLat();
+            maxLng = bounds.getMaxLng();
+
+            map.moveCamera(CameraUpdateFactory.newLatLngBounds(new LatLngBounds(
+                   new LatLng(minLat, minLng), new LatLng(maxLat, maxLng)),0));
+        }
 
     }
     @Override
